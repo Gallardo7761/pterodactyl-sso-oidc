@@ -63,6 +63,10 @@ class OidcCallbackController extends Controller
             $claims = $this->fillMissingClaimsFromUserInfo($settings, $claims, (string) $tokens['access_token']);
         }
 
+        if (filter_var($claims['email_verified'] ?? false, FILTER_VALIDATE_BOOLEAN) !== true) {
+            throw new RuntimeException('The identity provider did not confirm a verified email.');
+        }
+
         $provisioning = new OidcUserProvisioningService($settings);
         $user = $provisioning->resolve($claims);
 
@@ -167,6 +171,7 @@ class OidcCallbackController extends Controller
             $settings['claim_first_name'] ?? null,
             $settings['claim_last_name'] ?? null,
             $settings['claim_admin'] ?? null,
+            'email_verified',
         ]);
 
         $missing = array_filter($watched, fn (string $claim) => !array_key_exists($claim, $claims));
