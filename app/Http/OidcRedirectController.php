@@ -37,7 +37,13 @@ class OidcRedirectController extends Controller
         $request->session()->put('ssooidc.state', $state);
         $request->session()->put('ssooidc.nonce', $nonce);
         $request->session()->put('ssooidc.code_verifier', $codeVerifier);
-        $request->session()->put('ssooidc.intended', $request->query('redirect_to', '/'));
+        $intended = $request->query('redirect_to', '/');
+        $intended = is_string($intended) ? $intended : '/';
+        if (!str_starts_with($intended, '/') || str_starts_with($intended, '//')
+            || str_contains($intended, '\\') || preg_match('/[\x00-\x1f\x7f]/', $intended)) {
+            $intended = '/';
+        }
+        $request->session()->put('ssooidc.intended', $intended);
 
         // Optional UX nicety: if the caller already knows who's likely
         // logging in (e.g. a link built with ?login_hint=user@example.com),
