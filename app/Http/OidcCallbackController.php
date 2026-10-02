@@ -74,7 +74,7 @@ class OidcCallbackController extends Controller
         // minus the TOTP checkpoint branch: SSO logins intentionally skip 2FA,
         // since the second factor was already enforced (or not) by the IdP.
         $request->session()->regenerate();
-        Auth::guard()->login($user, true);
+        Auth::guard()->login($user, false);
 
         $sessionId = $request->session()->getId();
         $this->recordSession($claims, $user, $sessionId, (string) $tokens['id_token']);
